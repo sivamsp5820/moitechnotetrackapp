@@ -8,7 +8,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import com.moitech.notetracker.data.api.RetrofitClient
+import com.moitech.notetracker.data.db.AivenDbHelper
 import com.moitech.notetracker.data.local.LocalStorage
 import com.moitech.notetracker.data.model.TrackedFunction
 import com.moitech.notetracker.ui.components.BottomNavBar
@@ -31,22 +31,21 @@ fun MainAppScreen() {
     fun refreshData() {
         coroutineScope.launch {
             isLoading = true
-            try {
-                val api = RetrofitClient.getService(context)
-                val response = api.getTrackedFunctions()
-                if (response.isSuccessful && response.body()?.success == true) {
-                    val freshData = response.body()?.data ?: emptyList()
-                    functionsList = freshData
-                    LocalStorage.saveCachedFunctions(context, freshData)
-                    Toast.makeText(context, "Synced " + freshData.size + " functions", Toast.LENGTH_SHORT).show()
+            val result = AivenDbHelper.fetchTrackedFunctions(context)
+            if (result.isSuccess) {
+                val freshData = result.getOrNull() ?: emptyList()
+                functionsList = freshData
+                LocalStorage.saveCachedFunctions(context, freshData)
+                Toast.makeText(context, "Synced " + freshData.size + " functions from Aiven Cloud", Toast.LENGTH_SHORT).show()
+            } else {
+                val err = result.exceptionOrNull()?.localizedMessage ?: "Unknown error"
+                if (functionsList.isNotEmpty()) {
+                    Toast.makeText(context, "Cloud sync failed (" + err + "). Showing " + functionsList.size + " cached functions.", Toast.LENGTH_LONG).show()
                 } else {
-                    Toast.makeText(context, "Sync response error: " + response.message(), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Could not connect to Aiven Cloud: " + err, Toast.LENGTH_LONG).show()
                 }
-            } catch (e: Exception) {
-                Toast.makeText(context, "Offline mode - showing cached functions", Toast.LENGTH_SHORT).show()
-            } finally {
-                isLoading = false
             }
+            isLoading = false
         }
     }
 
@@ -67,12 +66,10 @@ fun MainAppScreen() {
         LocalStorage.saveCachedFunctions(context, updated)
 
         coroutineScope.launch {
-            try {
-                val api = RetrofitClient.getService(context)
-                val body = mapOf(stage to newVal)
-                api.updateFunctionTracking(item.systemName, item.funcId, body)
-            } catch (e: Exception) {
+            val res = AivenDbHelper.updateStage(context, item.systemName, item.funcId, stage, newVal)
+            if (res.isFailure) {
                 // Kept in local cache
+                Toast.makeText(context, "Updated locally (offline mode)", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -104,20 +101,21 @@ fun MainAppScreen() {
         selectedDetailItem = null
 
         coroutineScope.launch {
-            try {
-                val api = RetrofitClient.getService(context)
-                val body = mapOf(
-                    "phoneNumber" to phone,
-                    "NickName" to nickName,
-                    "notes" to notes,
-                    "Typed" to typed,
-                    "Print" to print,
-                    "givenForBinding" to binding,
-                    "givenToCustomer" to customer
-                )
-                api.updateFunctionTracking(item.systemName, item.funcId, body)
-                Toast.makeText(context, "Saved and synchronized!", Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
+            val res = AivenDbHelper.updateFunctionFull(
+                context,
+                item.systemName,
+                item.funcId,
+                phone,
+                nickName,
+                notes,
+                typed,
+                print,
+                binding,
+                customer
+            )
+            if (res.isSuccess) {
+                Toast.makeText(context, "Saved & synced to Aiven Cloud!", Toast.LENGTH_SHORT).show()
+            } else {
                 Toast.makeText(context, "Saved locally (offline)", Toast.LENGTH_SHORT).show()
             }
         }
@@ -188,12 +186,7 @@ fun MainAppScreen() {
                             functions = functionsList,
                             onSaveNicknames = { sys, nick ->
                                 coroutineScope.launch {
-                                    try {
-                                        val api = RetrofitClient.getService(context)
-                                        api.updatePcNickname(mapOf("systemName" to sys, "NickName" to nick))
-                                    } catch (e: Exception) {
-                                        // Offline
-                                    }
+                                    AivenDbHelper.updatePcNickname(context, sys, nick)
                                 }
                             }
                         )
