@@ -31,21 +31,27 @@ fun MainAppScreen() {
     fun refreshData() {
         coroutineScope.launch {
             isLoading = true
-            val result = AivenDbHelper.fetchTrackedFunctions(context)
-            if (result.isSuccess) {
-                val freshData = result.getOrNull() ?: emptyList()
-                functionsList = freshData
-                LocalStorage.saveCachedFunctions(context, freshData)
-                Toast.makeText(context, "Synced " + freshData.size + " functions from Aiven Cloud", Toast.LENGTH_SHORT).show()
-            } else {
-                val err = result.exceptionOrNull()?.localizedMessage ?: "Unknown error"
-                if (functionsList.isNotEmpty()) {
-                    Toast.makeText(context, "Cloud sync failed (" + err + "). Showing " + functionsList.size + " cached functions.", Toast.LENGTH_LONG).show()
+            try {
+                val result = AivenDbHelper.fetchTrackedFunctions(context)
+                if (result.isSuccess) {
+                    val freshData = result.getOrNull() ?: emptyList()
+                    functionsList = freshData
+                    LocalStorage.saveCachedFunctions(context, freshData)
+                    Toast.makeText(context, "Synced " + freshData.size + " functions from Aiven Cloud", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, "Could not connect to Aiven Cloud: " + err, Toast.LENGTH_LONG).show()
+                    val err = result.exceptionOrNull()?.localizedMessage ?: "Unknown error"
+                    if (functionsList.isNotEmpty()) {
+                        Toast.makeText(context, "Cloud sync failed (" + err + "). Showing " + functionsList.size + " cached functions.", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(context, "Could not connect to Aiven Cloud: " + err, Toast.LENGTH_LONG).show()
+                    }
                 }
+            } catch (t: Throwable) {
+                android.util.Log.e("MainAppScreen", "Error refreshing data", t)
+                Toast.makeText(context, "Sync error: " + (t.localizedMessage ?: t.javaClass.simpleName), Toast.LENGTH_LONG).show()
+            } finally {
+                isLoading = false
             }
-            isLoading = false
         }
     }
 

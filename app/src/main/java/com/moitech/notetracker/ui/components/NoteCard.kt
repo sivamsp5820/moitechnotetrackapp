@@ -202,7 +202,7 @@ fun NoteCard(
         // Progress Bar
         Spacer(modifier = Modifier.height(10.dp))
         LinearProgressIndicator(
-            progress = item.stageProgress,
+            progress = item.stageProgress.coerceIn(0f, 1f),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(3.dp)

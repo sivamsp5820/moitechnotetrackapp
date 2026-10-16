@@ -13,14 +13,19 @@ object AivenDbHelper {
     private const val TAG = "AivenDbHelper"
 
     init {
+        ensureDriverLoaded()
+    }
+
+    private fun ensureDriverLoaded() {
         try {
             Class.forName("org.mariadb.jdbc.Driver")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error initializing MariaDB driver", e)
+        } catch (t: Throwable) {
+            Log.e(TAG, "Error initializing MariaDB driver", t)
         }
     }
 
     private fun getConnection(context: Context): Connection {
+        ensureDriverLoaded()
         val host = AivenConfigStorage.getHost(context)
         val port = AivenConfigStorage.getPort(context)
         val db = AivenConfigStorage.getDatabase(context)
@@ -35,7 +40,10 @@ object AivenDbHelper {
             setProperty("password", pass)
         }
 
-        DriverManager.setLoginTimeout(10)
+        try {
+            DriverManager.setLoginTimeout(10)
+        } catch (t: Throwable) {}
+
         return DriverManager.getConnection(jdbcUrl, props)
     }
 
@@ -53,9 +61,9 @@ object AivenDbHelper {
                     }
                 }
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "Database test connection failed", e)
-            Result.failure(e)
+        } catch (t: Throwable) {
+            Log.e(TAG, "Database test connection failed", t)
+            Result.failure(t)
         }
     }
 
@@ -127,9 +135,9 @@ object AivenDbHelper {
                 }
             }
             Result.success(list)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error fetching tracked functions from Aiven MySQL", e)
-            Result.failure(e)
+        } catch (t: Throwable) {
+            Log.e(TAG, "Error fetching tracked functions from Aiven MySQL", t)
+            Result.failure(t)
         }
     }
 
@@ -159,9 +167,9 @@ object AivenDbHelper {
                 }
             }
             Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error updating stage in Aiven MySQL", e)
-            Result.failure(e)
+        } catch (t: Throwable) {
+            Log.e(TAG, "Error updating stage in Aiven MySQL", t)
+            Result.failure(t)
         }
     }
 
@@ -206,9 +214,9 @@ object AivenDbHelper {
                 }
             }
             Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error updating function details in Aiven MySQL", e)
-            Result.failure(e)
+        } catch (t: Throwable) {
+            Log.e(TAG, "Error updating function details in Aiven MySQL", t)
+            Result.failure(t)
         }
     }
 
@@ -227,9 +235,9 @@ object AivenDbHelper {
                 }
             }
             Result.success(Unit)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error updating PC nickname in Aiven MySQL", e)
-            Result.failure(e)
+        } catch (t: Throwable) {
+            Log.e(TAG, "Error updating PC nickname in Aiven MySQL", t)
+            Result.failure(t)
         }
     }
 }
