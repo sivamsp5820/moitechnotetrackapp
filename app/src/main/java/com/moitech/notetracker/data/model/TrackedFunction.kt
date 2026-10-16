@@ -3,22 +3,22 @@ package com.moitech.notetracker.data.model
 import com.google.gson.annotations.SerializedName
 
 data class TrackedFunction(
-    @SerializedName("systemName") val systemName: String,
-    @SerializedName("NickName") val nickName: String? = null,
-    @SerializedName("funcId") val funcId: Int,
-    @SerializedName("FuncName") val funcName: String,
-    @SerializedName("FuncDate") val funcDate: String,
-    @SerializedName("FuncTime") val funcTime: String? = null,
-    @SerializedName("Typed") val typed: Int = 0,
-    @SerializedName("Print") val print: Int = 0,
-    @SerializedName("givenForBinding") val givenForBinding: Int = 0,
-    @SerializedName("givenToCustomer") val givenToCustomer: Int = 0,
-    @SerializedName("phoneNumber") val phoneNumber: String? = null,
-    @SerializedName("notes") val notes: String? = null,
-    @SerializedName("customerName") val customerName: String? = null,
-    @SerializedName("totalAmount") val totalAmount: Double? = null,
-    @SerializedName("isDeleted") val isDeleted: Int = 0,
-    @SerializedName("updatedAt") val updatedAt: String? = null
+    @SerializedName(value = "systemName", alternate = ["SystemName"]) val systemName: String,
+    @SerializedName(value = "nickName", alternate = ["NickName"]) val nickName: String? = null,
+    @SerializedName(value = "funcId", alternate = ["Funcid", "FuncId"]) val funcId: Int,
+    @SerializedName(value = "funcName", alternate = ["FuncName"]) val funcName: String,
+    @SerializedName(value = "funcDate", alternate = ["FuncDate"]) val funcDate: String,
+    @SerializedName(value = "funcTime", alternate = ["FuncTime"]) val funcTime: String? = null,
+    @SerializedName(value = "isTyped", alternate = ["Typed", "typed"]) val typed: Int = 0,
+    @SerializedName(value = "isPrint", alternate = ["Print", "print"]) val print: Int = 0,
+    @SerializedName(value = "isGivenBinding", alternate = ["givenForBinding", "binding"]) val givenForBinding: Int = 0,
+    @SerializedName(value = "isGivenCustomer", alternate = ["givenToCustomer", "customer"]) val givenToCustomer: Int = 0,
+    @SerializedName(value = "phoneNumber", alternate = ["phone", "PhoneNumber"]) val phoneNumber: String? = null,
+    @SerializedName(value = "notes", alternate = ["Notes"]) val notes: String? = null,
+    @SerializedName(value = "customerName", alternate = ["personName", "PersonName"]) val customerName: String? = null,
+    @SerializedName(value = "totalAmount", alternate = ["TotalAmount"]) val totalAmount: Double? = null,
+    @SerializedName(value = "isDeleted", alternate = ["IsDeleted"]) val isDeleted: Int = 0,
+    @SerializedName(value = "updatedAt", alternate = ["lastSyncedAt", "UpdatedAt"]) val updatedAt: String? = null
 ) {
     val isTyped: Boolean get() = typed == 1
     val isPrint: Boolean get() = print == 1

@@ -13,8 +13,8 @@ object LocalStorage {
     private const val KEY_NICKNAMES = "nicknames_map"
     private const val KEY_LAST_SYNC = "last_sync_time"
 
-    // Default to common LAN IP or local emulator
-    const val DEFAULT_BASE_URL = "http://10.0.2.2:3000/api/"
+    // Default to port 5000 and /api/mysql/ path matching desktop backend
+    const val DEFAULT_BASE_URL = "http://10.0.2.2:5000/api/mysql/"
 
     private val gson = Gson()
 
@@ -27,7 +27,15 @@ object LocalStorage {
     }
 
     fun setBaseUrl(context: Context, url: String) {
-        val sanitized = if (!url.endsWith("/")) "$url/" else url
+        var sanitized = url.trim()
+        if (!sanitized.endsWith("/")) sanitized = "$sanitized/"
+        if (!sanitized.contains("/api/mysql/")) {
+            if (sanitized.endsWith("/api/")) {
+                sanitized = "${sanitized}mysql/"
+            } else {
+                sanitized = "${sanitized}api/mysql/"
+            }
+        }
         getPrefs(context).edit().putString(KEY_BASE_URL, sanitized).apply()
     }
 
