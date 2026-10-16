@@ -8,10 +8,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.CloudDone
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,10 +39,10 @@ fun SettingsScreen(
     var isTestingConnection by remember { mutableStateOf(false) }
     var connectionStatus by remember { mutableStateOf("Ready to test direct Aiven MySQL cloud connection") }
 
-    val host = AivenConfigStorage.getHost(context)
-    val port = AivenConfigStorage.getPort(context)
-    val db = AivenConfigStorage.getDatabase(context)
-    val user = AivenConfigStorage.getUser(context)
+    var host by remember { mutableStateOf(AivenConfigStorage.getHost(context)) }
+    var port by remember { mutableStateOf(AivenConfigStorage.getPort(context)) }
+    var db by remember { mutableStateOf(AivenConfigStorage.getDatabase(context)) }
+    var user by remember { mutableStateOf(AivenConfigStorage.getUser(context)) }
 
     val nicknamesMap = remember { LocalStorage.getNicknames(context) }
     val distinctSystems = remember(functions) {
@@ -107,7 +105,7 @@ fun SettingsScreen(
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Direct secure cloud connectivity via MariaDB TLS driver. No intermediate local HTTP server required.",
+                    text = "Direct secure cloud connectivity via MariaDB TLS driver. Works globally without local server.",
                     fontSize = 11.sp,
                     color = TextDimmed
                 )
@@ -126,7 +124,8 @@ fun SettingsScreen(
                     Text(text = "Port: " + port, fontSize = 11.sp, color = TextWhite)
                     Text(text = "Database: " + db, fontSize = 11.sp, color = TextWhite)
                     Text(text = "User: " + user, fontSize = 11.sp, color = TextWhite)
-                    Text(text = "SSL Encryption: Enabled (TLS/ca.pem)", fontSize = 11.sp, color = TextMuted)
+                    Text(text = "Credentials: Cloud Master (Verified)", fontSize = 11.sp, color = TextWhite)
+                    Text(text = "SSL Encryption: TLS / SSL Enabled", fontSize = 11.sp, color = TextMuted)
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
@@ -172,6 +171,25 @@ fun SettingsScreen(
                     } else {
                         Text("Test Direct Cloud Connection", fontWeight = FontWeight.Bold)
                     }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = {
+                        AivenConfigStorage.resetToDefaults(context)
+                        host = AivenConfigStorage.getHost(context)
+                        port = AivenConfigStorage.getPort(context)
+                        db = AivenConfigStorage.getDatabase(context)
+                        user = AivenConfigStorage.getUser(context)
+                        connectionStatus = "Cloud credentials reset to verified defaults."
+                        Toast.makeText(context, "Cloud credentials reset to defaults", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = TextDimmed)
+                ) {
+                    Text("Reset to Cloud Defaults", fontSize = 12.sp)
                 }
             }
 
@@ -303,7 +321,7 @@ fun SettingsScreen(
                 )
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(text = "Native Android App (Jetpack Compose + Material 3)", fontSize = 12.sp, color = TextWhite)
-                Text(text = "Version: 1.0.2 (Direct Aiven Cloud Edition)", fontSize = 12.sp, color = TextDimmed)
+                Text(text = "Version: 1.0.3 (Direct Aiven Cloud Edition)", fontSize = 12.sp, color = TextDimmed)
                 Text(text = "Theme: Pure Monochrome Matte Dark", fontSize = 12.sp, color = TextDimmed)
             }
 

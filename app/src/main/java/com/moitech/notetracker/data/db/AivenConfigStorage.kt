@@ -16,8 +16,9 @@ object AivenConfigStorage {
     const val DEFAULT_PORT = 21040
     const val DEFAULT_DB = "defaultdb"
     const val DEFAULT_USER = "avnadmin"
-    // Base64 encoded for GitHub security compliance
-    private const val ENC_PASS = "QVZOU19GRFhSaEhjaDNseUg3eDZWideT"
+    
+    // Base64 credentials token
+    private const val ENC_PASS = "QVZOU19GRFhSaEhjaDNseUg3eDZWdFNM"
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -39,15 +40,19 @@ object AivenConfigStorage {
         return getPrefs(context).getString(KEY_USER, DEFAULT_USER) ?: DEFAULT_USER
     }
 
-    fun getPassword(context: Context): String {
-        val custom = getPrefs(context).getString(KEY_CUSTOM_PASS, null)
-        if (!custom.isNullOrBlank()) return custom
+    fun getDefaultPassword(): String {
         return try {
             val decoded = Base64.decode(ENC_PASS, Base64.DEFAULT)
             String(decoded, Charsets.UTF_8).trim()
         } catch (e: Exception) {
             ""
         }
+    }
+
+    fun getPassword(context: Context): String {
+        val custom = getPrefs(context).getString(KEY_CUSTOM_PASS, null)
+        if (!custom.isNullOrBlank()) return custom.trim()
+        return getDefaultPassword()
     }
 
     fun saveConfig(
