@@ -1,0 +1,7 @@
+<resources>
+    <color name="canvas_black">#0A0A0A</color>
+    <color name="surface_dark">#141414</color>
+    <color name="border_dark">#27272A</color>
+    <color name="text_white">#FFFFFF</color>
+    <color name="text_muted">#A1A1AA</color>
+</resources>
